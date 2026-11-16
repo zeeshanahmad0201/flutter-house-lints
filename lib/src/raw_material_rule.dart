@@ -46,10 +46,7 @@ class RawMaterialRule extends AnalysisRule {
              '// ignore_for_file: flutter_house_lints/$name.',
          severity: DiagnosticSeverity.WARNING,
        ),
-       super(
-         description:
-             'Flags raw Material $component widgets in app code.',
-       );
+       super(description: 'Flags raw Material $component widgets in app code.');
 
   /// Material class names whose constructors are flagged.
   final Set<String> classes;
