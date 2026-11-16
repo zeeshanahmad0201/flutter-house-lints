@@ -1,45 +1,46 @@
 /// A stand-in for `package:flutter/material.dart`: just the classes and
 /// functions the rules match, with the named constructors the tests use.
+/// Constructors are const, as Flutter's are, so tests can write `const X()`.
 /// Shared by the rule tests and the plugin test so both match the same API.
 const fakeMaterialLibrary = r'''
-class AppBar { AppBar(); }
-class SliverAppBar { SliverAppBar(); SliverAppBar.medium(); SliverAppBar.large(); }
+class AppBar { const AppBar(); }
+class SliverAppBar { const SliverAppBar(); const SliverAppBar.medium(); const SliverAppBar.large(); }
 
-class ListTile { ListTile(); }
-class CheckboxListTile { CheckboxListTile(); CheckboxListTile.adaptive(); }
-class RadioListTile<T> { RadioListTile(); RadioListTile.adaptive(); }
-class SwitchListTile { SwitchListTile(); SwitchListTile.adaptive(); }
-class ExpansionTile { ExpansionTile(); }
+class ListTile { const ListTile(); }
+class CheckboxListTile { const CheckboxListTile(); const CheckboxListTile.adaptive(); }
+class RadioListTile<T> { const RadioListTile(); const RadioListTile.adaptive(); }
+class SwitchListTile { const SwitchListTile(); const SwitchListTile.adaptive(); }
+class ExpansionTile { const ExpansionTile(); }
 
-class AlertDialog { AlertDialog(); AlertDialog.adaptive(); }
-class SimpleDialog { SimpleDialog(); }
-class Dialog { Dialog(); Dialog.fullscreen(); }
+class AlertDialog { const AlertDialog(); const AlertDialog.adaptive(); }
+class SimpleDialog { const SimpleDialog(); }
+class Dialog { const Dialog(); const Dialog.fullscreen(); }
 
-class BottomSheet { BottomSheet(); }
+class BottomSheet { const BottomSheet(); }
 Future<T?> showModalBottomSheet<T>() async => null;
 Object showBottomSheet() => Object();
 
-class ElevatedButton { ElevatedButton(); ElevatedButton.icon(); }
-class FilledButton { FilledButton(); FilledButton.tonal(); FilledButton.icon(); }
-class TextButton { TextButton(); TextButton.icon(); }
-class OutlinedButton { OutlinedButton(); OutlinedButton.icon(); }
-class IconButton { IconButton(); IconButton.filled(); IconButton.outlined(); }
+class ElevatedButton { const ElevatedButton(); const ElevatedButton.icon(); }
+class FilledButton { const FilledButton(); const FilledButton.tonal(); const FilledButton.icon(); }
+class TextButton { const TextButton(); const TextButton.icon(); }
+class OutlinedButton { const OutlinedButton(); const OutlinedButton.icon(); }
+class IconButton { const IconButton(); const IconButton.filled(); const IconButton.outlined(); }
 class FloatingActionButton {
-  FloatingActionButton();
-  FloatingActionButton.extended();
-  FloatingActionButton.small();
+  const FloatingActionButton();
+  const FloatingActionButton.extended();
+  const FloatingActionButton.small();
 }
 
-class TextField { TextField(); }
-class TextFormField { TextFormField(); }
+class TextField { const TextField(); }
+class TextFormField { const TextFormField(); }
 
-class Chip { Chip(); }
-class ActionChip { ActionChip(); ActionChip.elevated(); }
-class ChoiceChip { ChoiceChip(); ChoiceChip.elevated(); }
-class FilterChip { FilterChip(); FilterChip.elevated(); }
-class InputChip { InputChip(); }
+class Chip { const Chip(); }
+class ActionChip { const ActionChip(); const ActionChip.elevated(); }
+class ChoiceChip { const ChoiceChip(); const ChoiceChip.elevated(); }
+class FilterChip { const FilterChip(); const FilterChip.elevated(); }
+class InputChip { const InputChip(); }
 
-class Card { Card(); Card.filled(); Card.outlined(); }
+class Card { const Card(); const Card.filled(); const Card.outlined(); }
 
-class SnackBar { SnackBar(); }
+class SnackBar { const SnackBar(); }
 ''';

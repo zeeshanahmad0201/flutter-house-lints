@@ -23,10 +23,12 @@ const _generatedSuffixes = [
 /// component built directly in app code, so pages go through the app's shared
 /// widget instead.
 ///
-/// A use is flagged when it constructs one of [classes] (any constructor) or
-/// calls one of [functions], and the class or function is declared in a
-/// `package:flutter/` or `package:material_ui/` library. Matching is by resolved element, so a user's
-/// own class of the same name, a subclass and a tear-off are not flagged.
+/// A use is flagged when it constructs one of [classes] (any constructor,
+/// dot shorthands such as `const .new(...)` included) or calls one of
+/// [functions], and the class or function is declared in a `package:flutter/`
+/// or `package:material_ui/` library. Matching is by resolved element, so a
+/// user's own class of the same name, a subclass and a tear-off are not
+/// flagged.
 /// Only files under the package's `lib/` are checked, and generated files are
 /// skipped.
 class RawMaterialRule extends AnalysisRule {
@@ -66,6 +68,7 @@ class RawMaterialRule extends AnalysisRule {
   ) {
     var visitor = _Visitor(this, context);
     registry.addInstanceCreationExpression(this, visitor);
+    registry.addDotShorthandConstructorInvocation(this, visitor);
     if (functions.isNotEmpty) registry.addMethodInvocation(this, visitor);
   }
 }
@@ -77,11 +80,20 @@ class _Visitor extends SimpleAstVisitor<void> {
   final RuleContext context;
 
   @override
-  void visitInstanceCreationExpression(InstanceCreationExpression node) {
-    var type = node.constructorName.element?.enclosingElement;
+  void visitInstanceCreationExpression(InstanceCreationExpression node) =>
+      _checkConstructor(node.constructorName.element, node.constructorName);
+
+  /// `.new(...)` or `.named(...)` where the context type names the class.
+  @override
+  void visitDotShorthandConstructorInvocation(
+    DotShorthandConstructorInvocation node,
+  ) => _checkConstructor(node.element, node.constructorName);
+
+  void _checkConstructor(ConstructorElement? constructor, AstNode reportNode) {
+    var type = constructor?.enclosingElement;
     if (type == null || !rule.classes.contains(type.name)) return;
     if (!_fromMaterial(type) || !_inAppCode()) return;
-    rule.reportAtNode(node.constructorName, arguments: [type.name!]);
+    rule.reportAtNode(reportNode, arguments: [type.name!]);
   }
 
   @override

@@ -37,7 +37,7 @@ constructor tear-off. Only files under the package's `lib/` are checked;
 `test/`, `integration_test/`, `test_driver/` and generated files (`.g.dart`,
 `.freezed.dart`, `.mocks.dart`, `.gr.dart`, `.config.dart`) are skipped.
 
-| Rule | Flags (any constructor, named ones included) | Use instead |
+| Rule | Flags (any constructor, named ones and dot shorthands such as `const .new(...)` included) | Use instead |
 |---|---|---|
 | `no_raw_app_bar` | `AppBar`, `SliverAppBar` | the shared app bar |
 | `no_raw_list_tile` | `ListTile`, `CheckboxListTile`, `RadioListTile`, `SwitchListTile`, `ExpansionTile` | the shared list row |
@@ -110,8 +110,8 @@ One rule per component family, so a repo can switch off one. To add one:
    names; register it in `allRules` in `lib/main.dart`.
 2. A test in `test/rules/` (copy a sibling: it lists every use the rule must
    flag), with any new classes added to `test/src/fake_flutter.dart`.
-3. One raw use in `example/lib/page.dart`, and the rule id in
-   `tool/check_example.sh`'s expected list.
+3. One raw use in `example/lib/page.dart` (`tool/check_example.sh` reads the
+   rule ids from `lib/src/rules/`).
 4. A row in the rules table above and an entry in `CHANGELOG.md`.
 5. A new tag (see versioning).
 
@@ -130,6 +130,10 @@ matches the tag.
   before an app upgrades into it. The example check judges only this plugin's
   `no_raw_*` warnings (other analyzer infos, such as SDK deprecations, are
   printed but not judged); an analyzer error still fails it.
+- GitHub switches off a public repo's scheduled workflows after 60 days with
+  no activity. Each scheduled run re-enables `ci.yml` through the API (the
+  `keepalive` job), which resets that timer, so the weekly check keeps running
+  while the repo is quiet. If it ever stops, re-enable it under Actions.
 - An `ignore_for_file: flutter_house_lints/...` line anywhere other than the
   shared widget's own file is a workaround, not an exemption: fix the page to
   use the shared widget. `grep -rn "flutter_house_lints/" lib/` in an app lists
@@ -144,6 +148,9 @@ matches the tag.
   the `version`, `hosted` and `path` forms of a plugin source; the `git` form
   arrived with Dart 3.13. The SDK lower bound above turns this into a `pub get`
   failure.
+- **A constructor tear-off passes, by design.** `AppBar.new` passed as a
+  function is a reference, not a build; only calls are flagged (plain, `const`,
+  `new`, prefixed and dot-shorthand ones).
 - **Rebuilding a component from primitives passes.** A page that builds its own
   button from `Material`, `InkWell` and `Text` is not flagged; review still has
   to catch that.

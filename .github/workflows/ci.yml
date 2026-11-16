@@ -49,3 +49,17 @@ jobs:
           channel: stable
           flutter-version: ${{ matrix.version }}
       - run: tool/check_example.sh
+
+  # GitHub switches off a public repo's scheduled workflows after 60 days with
+  # no repository activity. Re-enabling this workflow on each scheduled run
+  # resets that timer, so the weekly check keeps running in a quiet repo.
+  keepalive:
+    name: Keep the weekly schedule enabled
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/ci.yml/enable"
+        env:
+          GH_TOKEN: ${{ github.token }}

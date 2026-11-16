@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// One raw use per rule: tool/check_example.sh expects each of the nine rules
-/// to fire here exactly once.
+/// One raw use per rule: tool/check_example.sh expects each rule to fire here
+/// exactly once. The snack bar is a dot shorthand (`const .new(...)`), so that
+/// syntax is checked end to end too.
 class ExamplePage extends StatelessWidget {
   const ExamplePage({super.key});
 
@@ -25,7 +26,7 @@ class ExamplePage extends StatelessWidget {
                 builder: (_) => const SizedBox(height: 200),
               );
               ScaffoldMessenger.of(context)
-                  .showSnackBar(const SnackBar(content: Text('Done')));
+                  .showSnackBar(const .new(content: Text('Done')));
             },
             child: const Text('Open'),
           ),

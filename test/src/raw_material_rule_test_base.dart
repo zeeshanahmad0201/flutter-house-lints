@@ -41,23 +41,53 @@ abstract class RawMaterialRuleTest extends AnalysisRuleTest {
     return "import '$library';\n\nvoid build() {\n$calls\n}\n";
   }
 
-  Future<void> _assertFlagsEveryUse(String library) async {
-    var content = _source(flaggedUses, library: library);
+  /// The class or function a use names: `SliverAppBar` for
+  /// `SliverAppBar.medium`.
+  String _named(String use) => use.split('.').first;
+
+  /// The constructor a use calls: `new` for `AppBar`, `medium` for
+  /// `SliverAppBar.medium`.
+  String _constructor(String use) =>
+      use.contains('.') ? use.split('.').last : 'new';
+
+  /// Whether a use calls a function (the sheet functions), not a constructor.
+  bool _isFunction(String use) => _rule.functions.contains(_named(use));
+
+  /// Asserts [content] gets exactly one diagnostic per entry of [flagged]: on
+  /// the `range` part of `line` (which appears once in [content]), naming the
+  /// class or function `name`.
+  Future<void> _assertFlags(
+    String content,
+    List<({String line, String range, String name})> flagged,
+  ) async {
+    int offsetOf(String line) {
+      var offset = content.indexOf(line);
+      expect(offset, isNonNegative, reason: line);
+      expect(content.lastIndexOf(line), offset, reason: 'not unique: $line');
+      return offset;
+    }
+
     await assertDiagnostics(content, [
-      for (var use in flaggedUses)
+      for (var (:line, :range, :name) in flagged)
         lint(
-          content.indexOf('  $use();') + 2,
-          use.length,
+          offsetOf(line) + line.indexOf(range),
+          range.length,
           messageContainsAll: [
-            'Raw ${use.split('.').first} in app code: use this repo\'s shared '
-                '$component widget (see its REFERENCES.md).',
+            "Raw $name in app code: use this repo's shared $component widget "
+                '(see its REFERENCES.md).',
           ],
           correctionContains:
-              "Only that widget's own file may use ${use.split('.').first}, "
-              'with // ignore_for_file: flutter_house_lints/${rule.name}.',
+              "Only that widget's own file may use $name, with "
+              '// ignore_for_file: flutter_house_lints/${rule.name}.',
         ),
     ]);
   }
+
+  Future<void> _assertFlagsEveryUse(String library) =>
+      _assertFlags(_source(flaggedUses, library: library), [
+        for (var use in flaggedUses)
+          (line: '  $use();', range: use, name: _named(use)),
+      ]);
 
   Future<void> test_flagsEveryUse() =>
       _assertFlagsEveryUse('package:flutter/material.dart');
@@ -65,8 +95,49 @@ abstract class RawMaterialRuleTest extends AnalysisRuleTest {
   Future<void> test_flagsEveryUseFromMaterialUi() =>
       _assertFlagsEveryUse('package:material_ui/material_ui.dart');
 
+  /// `const`, `new` and a prefixed import (`m.AppBar()`): the underline
+  /// covers the prefix and the constructor name; for a function, its name.
+  Future<void> test_flagsConstNewAndPrefixedUses() {
+    var flagged = [
+      for (var use in flaggedUses)
+        if (_isFunction(use))
+          (line: '  m.$use();', range: use, name: use)
+        else ...[
+          (line: '  const m.$use();', range: 'm.$use', name: _named(use)),
+          (line: '  new m.$use();', range: 'm.$use', name: _named(use)),
+        ],
+    ];
+    return _assertFlags(
+      "import 'package:flutter/material.dart' as m;\n\n"
+      'void build() {\n${flagged.map((f) => f.line).join('\n')}\n}\n',
+      flagged,
+    );
+  }
+
+  /// `.new()` and `.named()` where the context type is the class, plain and
+  /// `const`: the underline is the constructor name after the dot.
+  Future<void> test_flagsDotShorthands() {
+    var uses = flaggedUses.where((use) => !_isFunction(use));
+    var flagged = [
+      for (var (i, use) in uses.indexed)
+        for (var (function, keyword) in [('f', ''), ('g', 'const ')])
+          (
+            line:
+                '${_named(use)} $function$i() => '
+                '$keyword.${_constructor(use)}();',
+            range: _constructor(use),
+            name: _named(use),
+          ),
+    ];
+    return _assertFlags(
+      "import 'package:flutter/material.dart';\n\n"
+      '${flagged.map((f) => f.line).join('\n')}\n',
+      flagged,
+    );
+  }
+
   void test_coversEveryClassAndFunction() {
-    var covered = flaggedUses.map((use) => use.split('.').first).toSet();
+    var covered = flaggedUses.map(_named).toSet();
     expect(covered, {..._rule.classes, ..._rule.functions});
   }
 
@@ -105,11 +176,19 @@ abstract class RawMaterialRuleTest extends AnalysisRuleTest {
     await assertNoDiagnosticsInFile(file.path);
   }
 
-  Future<void> test_generatedFileIsNotFlagged() async {
-    var file = newFile(
-      '$testPackageRootPath/lib/page.g.dart',
-      _source(flaggedUses),
-    );
-    await assertNoDiagnosticsInFile(file.path);
+  Future<void> test_generatedFilesAreNotFlagged() async {
+    for (var suffix in [
+      '.g.dart',
+      '.freezed.dart',
+      '.mocks.dart',
+      '.gr.dart',
+      '.config.dart',
+    ]) {
+      var file = newFile(
+        '$testPackageRootPath/lib/page$suffix',
+        _source(flaggedUses),
+      );
+      await assertNoDiagnosticsInFile(file.path);
+    }
   }
 }
