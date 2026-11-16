@@ -10,7 +10,7 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 # Every rule id, read from the rule files, so a new rule is checked here
 # without editing this script.
-rules=$(grep -ho "name: 'no_raw_[a-z_]*'" "$root"/lib/src/rules/*.dart | cut -d"'" -f2)
+rules=$(grep -ho "name: 'no_raw_[a-z_]*'" "$root"/lib/src/rules/*.dart | cut -d"'" -f2 || true)
 if [[ -z "$rules" ]]; then
   echo "FAIL: no rule ids found in $root/lib/src/rules/." >&2
   exit 1
