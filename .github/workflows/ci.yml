@@ -22,24 +22,30 @@ jobs:
       - uses: dart-lang/setup-dart@v1
         with:
           sdk: stable
-      - run: dart pub get
+      # The example needs the Flutter SDK; the example job resolves it.
+      - run: dart pub get --no-example
       # The example is a separate Flutter package, not resolved in this job.
       - run: dart format --output=none --set-exit-if-changed lib test
       - run: dart analyze
       - run: dart test
 
   example:
-    name: Example check (Flutter ${{ matrix.flutter }})
+    name: Example check (Flutter ${{ matrix.label }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # The latest stable, unpinned, and the floor app repos run.
-        flutter: [stable, 3.47.9]
+        # The latest stable, unpinned (an empty version), and the floor app
+        # repos run.
+        include:
+          - label: stable
+            version: ""
+          - label: 3.47.9
+            version: 3.47.9
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: ${{ matrix.flutter == 'stable' && '' || matrix.flutter }}
+          flutter-version: ${{ matrix.version }}
       - run: tool/check_example.sh
