@@ -28,31 +28,42 @@ abstract class RawMaterialRuleTest extends AnalysisRuleTest {
   void setUp() {
     rule = createRule();
     newPackage('flutter').addFile('lib/material.dart', fakeMaterialLibrary);
+    newPackage('material_ui')
+        .addFile('lib/material_ui.dart', fakeMaterialLibrary);
     super.setUp();
   }
 
-  String _source(List<String> uses, {String header = ''}) {
+  String _source(
+    List<String> uses, {
+    String library = 'package:flutter/material.dart',
+  }) {
     var calls = uses.map((use) => '  $use();').join('\n');
-    return "${header}import 'package:flutter/material.dart';\n\n"
-        'void build() {\n$calls\n}\n';
+    return "import '$library';\n\nvoid build() {\n$calls\n}\n";
   }
 
-  Future<void> test_flagsEveryUse() async {
-    var content = _source(flaggedUses);
+  Future<void> _assertFlagsEveryUse(String library) async {
+    var content = _source(flaggedUses, library: library);
     await assertDiagnostics(content, [
       for (var use in flaggedUses)
         lint(
           content.indexOf('  $use();') + 2,
           use.length,
-          messageContainsAll: ['Raw ${use.split('.').first} in app code.'],
+          messageContainsAll: [
+            'Raw ${use.split('.').first} in app code: use this repo\'s shared '
+                '$component widget (see its REFERENCES.md).',
+          ],
           correctionContains:
-              "Use this repo's shared $component widget (listed in its "
-              'REFERENCES.md). Only that widget\'s own file may use '
-              '${use.split('.').first}, with '
-              '// ignore_for_file: flutter_house_lints/${rule.name}.',
+              "Only that widget's own file may use ${use.split('.').first}, "
+              'with // ignore_for_file: flutter_house_lints/${rule.name}.',
         ),
     ]);
   }
+
+  Future<void> test_flagsEveryUse() =>
+      _assertFlagsEveryUse('package:flutter/material.dart');
+
+  Future<void> test_flagsEveryUseFromMaterialUi() =>
+      _assertFlagsEveryUse('package:material_ui/material_ui.dart');
 
   void test_coversEveryClassAndFunction() {
     var covered = flaggedUses.map((use) => use.split('.').first).toSet();

@@ -6,6 +6,10 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/error/error.dart';
 
+/// Where Material's own components are declared: Flutter itself, and the
+/// `material_ui` package Flutter is moving Material into.
+const _materialLibraries = ['package:flutter/', 'package:material_ui/'];
+
 /// Suffixes of generated files, which nobody edits by hand.
 const _generatedSuffixes = [
   '.g.dart',
@@ -21,7 +25,7 @@ const _generatedSuffixes = [
 ///
 /// A use is flagged when it constructs one of [classes] (any constructor) or
 /// calls one of [functions], and the class or function is declared in a
-/// `package:flutter/` library. Matching is by resolved element, so a user's
+/// `package:flutter/` or `package:material_ui/` library. Matching is by resolved element, so a user's
 /// own class of the same name, a subclass and a tear-off are not flagged.
 /// Only files under the package's `lib/` are checked, and generated files are
 /// skipped.
@@ -33,19 +37,21 @@ class RawMaterialRule extends AnalysisRule {
     this.functions = const {},
   }) : diagnosticCode = LintCode(
          name,
-         'Raw {0} in app code.',
+         // The problem message carries the pointer, because some tools
+         // (`dart analyze --format=machine`) show only this part.
+         "Raw {0} in app code: use this repo's shared $component widget "
+         '(see its REFERENCES.md).',
          correctionMessage:
-             "Use this repo's shared $component widget (listed in its "
-             'REFERENCES.md). Only that widget\'s own file may use {0}, with '
+             "Only that widget's own file may use {0}, with "
              '// ignore_for_file: flutter_house_lints/$name.',
          severity: DiagnosticSeverity.WARNING,
        ),
        super(
          description:
-             'Flags raw Flutter Material $component widgets in app code.',
+             'Flags raw Material $component widgets in app code.',
        );
 
-  /// Flutter class names whose constructors are flagged.
+  /// Material class names whose constructors are flagged.
   final Set<String> classes;
 
   /// Flutter top-level function names whose calls are flagged.
@@ -77,7 +83,7 @@ class _Visitor extends SimpleAstVisitor<void> {
   void visitInstanceCreationExpression(InstanceCreationExpression node) {
     var type = node.constructorName.element?.enclosingElement;
     if (type == null || !rule.classes.contains(type.name)) return;
-    if (!_fromFlutter(type) || !_inAppCode()) return;
+    if (!_fromMaterial(type) || !_inAppCode()) return;
     rule.reportAtNode(node.constructorName, arguments: [type.name!]);
   }
 
@@ -86,12 +92,14 @@ class _Visitor extends SimpleAstVisitor<void> {
     var function = node.methodName.element;
     if (function is! TopLevelFunctionElement) return;
     if (!rule.functions.contains(function.name)) return;
-    if (!_fromFlutter(function) || !_inAppCode()) return;
+    if (!_fromMaterial(function) || !_inAppCode()) return;
     rule.reportAtNode(node.methodName, arguments: [function.name!]);
   }
 
-  bool _fromFlutter(Element element) =>
-      element.library?.uri.toString().startsWith('package:flutter/') ?? false;
+  bool _fromMaterial(Element element) {
+    var uri = element.library?.uri.toString();
+    return uri != null && _materialLibraries.any(uri.startsWith);
+  }
 
   bool _inAppCode() {
     if (!context.isInLibDir) return false;

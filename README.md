@@ -28,8 +28,11 @@ environment:
 ## Rules
 
 Every rule is on by default and reports a warning (`dart analyze` exits 2).
-Matching is by the resolved Flutter element, so a class of your own named
-`Card` is not flagged, and neither is a subclass of a Material widget or a
+A use is flagged when the class or function is declared by Material itself:
+in Flutter (`package:flutter/`, as imported through
+`package:flutter/material.dart`) or in the `material_ui` package Flutter is
+moving Material into (`package:material_ui/`). Matching is by the resolved
+element, so a class of your own named `Card` is not flagged, and neither is a subclass of a Material widget or a
 constructor tear-off. Only files under the package's `lib/` are checked;
 `test/`, `integration_test/`, `test_driver/` and generated files (`.g.dart`,
 `.freezed.dart`, `.mocks.dart`, `.gr.dart`, `.config.dart`) are skipped.
@@ -47,7 +50,13 @@ constructor tear-off. Only files under the package's `lib/` are checked;
 | `no_raw_snack_bar` | `SnackBar` | the shared snack bar |
 
 Each warning names the raw class and points at the app's shared widget, which
-the app lists in its `REFERENCES.md`.
+the app lists in its `REFERENCES.md`, for example:
+
+```
+Raw AppBar in app code: use this repo's shared app bar widget (see its REFERENCES.md).
+```
+
+Its correction adds the ignore comment the shared widget's own file uses.
 
 ## Adopting it
 
@@ -118,7 +127,9 @@ matches the tag.
 - CI runs weekly (Mondays) as well as on each PR: the unit tests on the latest
   Dart stable, and `tool/check_example.sh` on the latest Flutter stable and on
   Flutter 3.47.9, the floor. A red weekly run means a new SDK broke the plugin
-  before an app upgrades into it.
+  before an app upgrades into it. The example check judges only this plugin's
+  `no_raw_*` warnings (other analyzer infos, such as SDK deprecations, are
+  printed but not judged); an analyzer error still fails it.
 - An `ignore_for_file: flutter_house_lints/...` line anywhere other than the
   shared widget's own file is a workaround, not an exemption: fix the page to
   use the shared widget. `grep -rn "flutter_house_lints/" lib/` in an app lists
