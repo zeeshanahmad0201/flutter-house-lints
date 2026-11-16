@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  # Weekly, so a new Dart or Flutter stable that breaks the plugin shows up
+  # here before an app repo upgrades into it.
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: Unit tests (Dart stable)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+      - run: dart pub get
+      # The example is a separate Flutter package, not resolved in this job.
+      - run: dart format --output=none --set-exit-if-changed lib test
+      - run: dart analyze
+      - run: dart test
+
+  example:
+    name: Example check (Flutter ${{ matrix.flutter }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The latest stable, unpinned, and the floor app repos run.
+        flutter: [stable, 3.47.9]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ matrix.flutter == 'stable' && '' || matrix.flutter }}
+      - run: tool/check_example.sh

@@ -1,0 +1,6 @@
+include: package:lints/recommended.yaml
+
+analyzer:
+  exclude:
+    # The example is a separate Flutter package with its own analysis options.
+    - example/**
