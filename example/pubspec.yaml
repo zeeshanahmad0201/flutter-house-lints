@@ -1,0 +1,11 @@
+name: flutter_house_lints_example
+description: A tiny Flutter app that loads flutter_house_lints from this repo, used by tool/check_example.sh.
+publish_to: none
+
+environment:
+  # Plugins from a git source need Dart 3.13+; see the README.
+  sdk: ^3.13.0
+
+dependencies:
+  flutter:
+    sdk: flutter
