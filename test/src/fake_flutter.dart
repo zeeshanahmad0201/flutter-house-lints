@@ -16,6 +16,10 @@ class AlertDialog { const AlertDialog(); const AlertDialog.adaptive(); }
 class SimpleDialog { const SimpleDialog(); }
 class Dialog { const Dialog(); const Dialog.fullscreen(); }
 
+Future<T?> showDialog<T>() async => null;
+Future<T?> showGeneralDialog<T>() async => null;
+Future<T?> showAdaptiveDialog<T>() async => null;
+
 class BottomSheet { const BottomSheet(); }
 Future<T?> showModalBottomSheet<T>() async => null;
 Object showBottomSheet() => Object();
@@ -43,4 +47,11 @@ class InputChip { const InputChip(); }
 class Card { const Card(); const Card.filled(); const Card.outlined(); }
 
 class SnackBar { const SnackBar(); }
+
+class Scaffold {
+  const Scaffold();
+  static Object of(Object context) => Object();
+  static Object? maybeOf(Object context) => null;
+}
+class ScaffoldMessenger { const ScaffoldMessenger(); }
 ''';

@@ -6,8 +6,15 @@ A Dart analyzer plugin that flags raw Material components (`AppBar`,
 Apps drift from their design system when each page builds its own Material
 chrome instead of using the app's shared widgets, and nobody notices in review.
 This plugin makes that a warning, so the same rule fires in the IDE, in
-`dart analyze` / `flutter analyze` (and so in CI), and in any tool that runs the
-analyzer on an edited file.
+`dart analyze` (and so in CI), and in any tool that runs the analyzer on an
+edited file.
+
+**CI must run `dart analyze`, not `flutter analyze`.** On Flutter 3.47.9,
+`flutter analyze` does not print plugin diagnostics: on this repo's `example/`
+it printed "No issues found!" while `dart analyze` printed the warnings. The
+IDE does show them. `dart analyze` exits 2 on a warning but 0 on an info, where
+`flutter analyze` fails on infos too; use `dart analyze --fatal-infos` to keep
+that strictness.
 
 ## Requirement: Dart 3.13+ (Flutter 3.47+)
 
@@ -41,13 +48,14 @@ constructor tear-off. Only files under the package's `lib/` are checked;
 |---|---|---|
 | `no_raw_app_bar` | `AppBar`, `SliverAppBar` | the shared app bar |
 | `no_raw_list_tile` | `ListTile`, `CheckboxListTile`, `RadioListTile`, `SwitchListTile`, `ExpansionTile` | the shared list row |
-| `no_raw_dialog` | `AlertDialog`, `SimpleDialog`, `Dialog` | the shared dialog |
+| `no_raw_dialog` | `AlertDialog`, `SimpleDialog`, `Dialog`, and calls to `showDialog`, `showGeneralDialog`, `showAdaptiveDialog` | the shared dialog |
 | `no_raw_bottom_sheet` | `BottomSheet`, and calls to `showModalBottomSheet`, `showBottomSheet` | the shared bottom sheet |
 | `no_raw_button` | `ElevatedButton`, `FilledButton`, `TextButton`, `OutlinedButton`, `IconButton`, `FloatingActionButton` | the shared button |
 | `no_raw_text_field` | `TextField`, `TextFormField` | the shared text field |
 | `no_raw_chip` | `Chip`, `ActionChip`, `ChoiceChip`, `FilterChip`, `InputChip` | the shared chip |
 | `no_raw_card` | `Card` | the shared card |
 | `no_raw_snack_bar` | `SnackBar` | the shared snack bar |
+| `no_raw_scaffold` | `Scaffold` (not `Scaffold.of`, `Scaffold.maybeOf` or `ScaffoldMessenger`) | the shared scaffold |
 
 Each warning names the raw class and points at the app's shared widget, which
 the app lists in its `REFERENCES.md`, for example:
@@ -67,7 +75,7 @@ plugins:
   flutter_house_lints:
     git:
       url: https://github.com/zeeshanahmad0201/flutter-house-lints.git
-      ref: v0.1.0
+      ref: v0.2.0
 ```
 
 In the same PR, raise the app's SDK lower bound (see the requirement above).
@@ -96,7 +104,7 @@ plugins:
   flutter_house_lints:
     git:
       url: https://github.com/zeeshanahmad0201/flutter-house-lints.git
-      ref: v0.1.0
+      ref: v0.2.0
     diagnostics:
       no_raw_chip: false
 ```
@@ -154,5 +162,6 @@ matches the tag.
 - **Rebuilding a component from primitives passes.** A page that builds its own
   button from `Material`, `InkWell` and `Text` is not flagged; review still has
   to catch that.
-- **Only the nine Material families above.** Cupertino widgets and other
-  Material widgets are not checked.
+- **Only the ten Material families above.** Cupertino widgets (such as
+  `CupertinoAlertDialog`, `showCupertinoDialog`, `CupertinoPageScaffold`) and
+  other Material widgets are not checked.

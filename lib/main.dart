@@ -11,6 +11,7 @@ import 'src/rules/no_raw_text_field.dart';
 import 'src/rules/no_raw_chip.dart';
 import 'src/rules/no_raw_card.dart';
 import 'src/rules/no_raw_snack_bar.dart';
+import 'src/rules/no_raw_scaffold.dart';
 
 /// The entry point the analysis server loads.
 final plugin = FlutterHouseLints();
@@ -26,6 +27,7 @@ final List<AnalysisRule> allRules = [
   NoRawChip(),
   NoRawCard(),
   NoRawSnackBar(),
+  NoRawScaffold(),
 ];
 
 class FlutterHouseLints extends Plugin {

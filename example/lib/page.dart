@@ -19,7 +19,7 @@ class ExamplePage extends StatelessWidget {
             onPressed: () {
               showDialog<void>(
                 context: context,
-                builder: (_) => const AlertDialog(title: Text('Dialog')),
+                builder: (_) => const SizedBox(height: 100),
               );
               showModalBottomSheet<void>(
                 context: context,

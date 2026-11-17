@@ -6,5 +6,10 @@ class NoRawDialog extends RawMaterialRule {
         name: 'no_raw_dialog',
         component: 'dialog',
         classes: const {'AlertDialog', 'SimpleDialog', 'Dialog'},
+        functions: const {
+          'showDialog',
+          'showGeneralDialog',
+          'showAdaptiveDialog',
+        },
       );
 }
