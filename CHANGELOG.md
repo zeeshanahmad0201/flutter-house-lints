@@ -9,7 +9,7 @@
 - Upgrading from 0.1.0: expect new warnings on a raw `Scaffold` and on calls
   to those dialog functions. Exempt the shared scaffold and dialog service
   files with `// ignore_for_file: flutter_house_lints/no_raw_scaffold` and
-  `.../no_raw_dialog`.
+  `// ignore_for_file: flutter_house_lints/no_raw_dialog`.
 - README: `flutter analyze` does not print plugin diagnostics on Flutter
   3.47.9; run `dart analyze` in CI (corrects a wrong claim in 0.1.0's README).
 

@@ -50,7 +50,7 @@ abstract class RawMaterialRuleTest extends AnalysisRuleTest {
   String _constructor(String use) =>
       use.contains('.') ? use.split('.').last : 'new';
 
-  /// Whether a use calls a function (the sheet functions), not a constructor.
+  /// Whether a use calls a function (a `show*` function), not a constructor.
   bool _isFunction(String use) => _rule.functions.contains(_named(use));
 
   /// Asserts [content] gets exactly one diagnostic per entry of [flagged]: on

@@ -156,9 +156,10 @@ matches the tag.
   the `version`, `hosted` and `path` forms of a plugin source; the `git` form
   arrived with Dart 3.13. The SDK lower bound above turns this into a `pub get`
   failure.
-- **A constructor tear-off passes, by design.** `AppBar.new` passed as a
-  function is a reference, not a build; only calls are flagged (plain, `const`,
-  `new`, prefixed and dot-shorthand ones).
+- **A tear-off passes, by design.** `AppBar.new` or `showDialog` passed as a
+  function (`final open = showDialog;`) is a reference, not a build or a call;
+  only constructor and function calls are flagged (plain, `const`, `new`,
+  prefixed and dot-shorthand ones).
 - **Rebuilding a component from primitives passes.** A page that builds its own
   button from `Material`, `InkWell` and `Text` is not flagged; review still has
   to catch that.
