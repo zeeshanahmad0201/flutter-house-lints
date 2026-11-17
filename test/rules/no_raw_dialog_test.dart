@@ -24,5 +24,8 @@ class NoRawDialogTest extends RawMaterialRuleTest {
     'SimpleDialog',
     'Dialog',
     'Dialog.fullscreen',
+    'showDialog',
+    'showGeneralDialog',
+    'showAdaptiveDialog',
   ];
 }
