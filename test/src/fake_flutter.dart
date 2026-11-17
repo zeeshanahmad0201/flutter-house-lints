@@ -55,3 +55,19 @@ class Scaffold {
 }
 class ScaffoldMessenger { const ScaffoldMessenger(); }
 ''';
+
+/// A stand-in for `package:flutter/widgets.dart`: the widget base classes the
+/// `no_stateful_widget` rule matches.
+const fakeWidgetsLibrary = r'''
+abstract class Widget { const Widget(); }
+abstract class StatelessWidget extends Widget { const StatelessWidget(); }
+abstract class StatefulWidget extends Widget { const StatefulWidget(); }
+abstract class State<T extends StatefulWidget> {}
+''';
+
+/// A stand-in for `package:flutter_hooks/flutter_hooks.dart`.
+const fakeHooksLibrary = r'''
+import 'package:flutter/widgets.dart';
+abstract class HookWidget extends StatelessWidget { const HookWidget(); }
+abstract class StatefulHookWidget extends StatefulWidget { const StatefulHookWidget(); }
+''';

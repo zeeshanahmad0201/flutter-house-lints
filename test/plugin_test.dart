@@ -16,7 +16,7 @@ import 'src/fake_flutter.dart';
 void main() {
   late Directory tmp;
   late Directory app;
-  var rules = allRules.cast<RawMaterialRule>();
+  var rules = allRules.whereType<RawMaterialRule>().toList();
 
   void write(String path, String content) => File('${app.path}/$path')
     ..createSync(recursive: true)

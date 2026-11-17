@@ -1,7 +1,8 @@
 # flutter-house-lints
 
 A Dart analyzer plugin that flags raw Material components (`AppBar`,
-`ListTile`, `ElevatedButton`, ...) in Flutter app code.
+`ListTile`, `ElevatedButton`, ...) and `StatefulWidget` subclasses in Flutter app
+code.
 
 Apps drift from their design system when each page builds its own Material
 chrome instead of using the app's shared widgets, and nobody notices in review.
@@ -56,8 +57,17 @@ constructor tear-off. Only files under the package's `lib/` are checked;
 | `no_raw_card` | `Card` | the shared card |
 | `no_raw_snack_bar` | `SnackBar` | the shared snack bar |
 | `no_raw_scaffold` | `Scaffold` (not `Scaffold.of`, `Scaffold.maybeOf` or `ScaffoldMessenger`) | the shared scaffold |
+| `no_stateful_widget` | a class that directly extends `StatefulWidget` (Flutter) or `StatefulHookWidget` (flutter_hooks); plain, prefixed, `abstract` and `class X = StatefulWidget with M;` forms | `HookWidget` from flutter_hooks |
 
-Each warning names the raw class and points at the app's shared widget, which
+`no_stateful_widget` is the one rule that is not about Material: it enforces a
+house convention (hooks, not `State` classes) and was moved into the lint
+because it was missed twice in review. It flags only a *direct* subclass, so an
+app's own base class that extends `StatefulWidget` is flagged where it is
+declared, not in every widget that extends it. `State<T>` subclasses, a class
+of your own named `StatefulWidget`, `HookWidget` and `StatelessWidget` are not
+flagged.
+
+Each Material warning names the raw class and points at the app's shared widget, which
 the app lists in its `REFERENCES.md`, for example:
 
 ```
@@ -75,7 +85,7 @@ plugins:
   flutter_house_lints:
     git:
       url: https://github.com/zeeshanahmad0201/flutter-house-lints.git
-      ref: v0.2.0
+      ref: v0.3.0
 ```
 
 In the same PR, raise the app's SDK lower bound (see the requirement above).
@@ -104,7 +114,7 @@ plugins:
   flutter_house_lints:
     git:
       url: https://github.com/zeeshanahmad0201/flutter-house-lints.git
-      ref: v0.2.0
+      ref: v0.3.0
     diagnostics:
       no_raw_chip: false
 ```
@@ -119,7 +129,9 @@ One rule per component family, so a repo can switch off one. To add one:
 2. A test in `test/rules/` (copy a sibling: it lists every use the rule must
    flag), with any new classes added to `test/src/fake_flutter.dart`.
 3. One raw use in `example/lib/page.dart` (`tool/check_example.sh` reads the
-   rule ids from `lib/src/rules/`).
+   rule ids from `lib/src/rules/`). A non-Material rule such as
+   `no_stateful_widget` has its own matcher instead; `app_code.dart` holds the
+   shared lib-only/generated-file and library checks.
 4. A row in the rules table above and an entry in `CHANGELOG.md`.
 5. A new tag (see versioning).
 
@@ -136,7 +148,7 @@ matches the tag.
   Dart stable, and `tool/check_example.sh` on the latest Flutter stable and on
   Flutter 3.47.9, the floor. A red weekly run means a new SDK broke the plugin
   before an app upgrades into it. The example check judges only this plugin's
-  `no_raw_*` warnings (other analyzer infos, such as SDK deprecations, are
+  `no_*` warnings (other analyzer infos, such as SDK deprecations, are
   printed but not judged); an analyzer error still fails it.
 - GitHub switches off a public repo's scheduled workflows after 60 days with
   no activity. Each scheduled run re-enables `ci.yml` through the API (the
@@ -163,6 +175,9 @@ matches the tag.
 - **Rebuilding a component from primitives passes.** A page that builds its own
   button from `Material`, `InkWell` and `Text` is not flagged; review still has
   to catch that.
+- **An indirect `StatefulWidget` subclass passes.** A class that extends an
+  app's own stateful base is not flagged; the base is. A `StatefulWidget`
+  re-exported or wrapped through another library's own class is not followed.
 - **Only the ten Material families above.** Cupertino widgets (such as
   `CupertinoAlertDialog`, `showCupertinoDialog`, `CupertinoPageScaffold`) and
   other Material widgets are not checked.

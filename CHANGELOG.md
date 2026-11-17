@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0
+
+- New rule `no_stateful_widget`: flags a class that extends `StatefulWidget`
+  (from `package:flutter/`) or `StatefulHookWidget` (from
+  `package:flutter_hooks/`), directly, as a plain, prefixed or `abstract`
+  class or a class type alias. Use a `HookWidget` instead.
+- Upgrading from 0.2.0: every existing `StatefulWidget` in `lib/` will now
+  warn. Fix them, or exempt a file that truly needs one with
+  `// ignore_for_file: flutter_house_lints/no_stateful_widget`.
+- Moved into this package because the convention was missed in two PRs, so
+  the rule set is no longer only raw Material components.
+
 ## 0.2.0
 
 - New rule `no_raw_scaffold`: flags a raw `Scaffold`. `Scaffold.of`,
