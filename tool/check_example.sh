@@ -26,7 +26,9 @@ echo "$output"
 
 # One "SEVERITY rule file" line per plugin diagnostic, from the machine format
 # SEVERITY|TYPE|CODE|FILE|LINE|COL|LENGTH|MESSAGE.
-actual=$(echo "$output" | awk -F'|' 'NF >= 8 && tolower($3) ~ /^no_/ {
+actual=$(echo "$output" | awk -F'|' -v ids="$(echo $rules)" '
+  BEGIN { n = split(ids, a, " "); for (i = 1; i <= n; i++) want[a[i]] = 1 }
+  NF >= 8 && (tolower($3) in want) {
   n = split($4, parts, "/")
   print $1, tolower($3), parts[n - 1] "/" parts[n]
 }' | sort)

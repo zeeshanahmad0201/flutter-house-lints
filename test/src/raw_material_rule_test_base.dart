@@ -1,15 +1,15 @@
 // test_reflective_loader runs methods named test_*.
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:analyzer_testing/analysis_rule/analysis_rule.dart';
 import 'package:flutter_house_lints/src/raw_material_rule.dart';
 import 'package:test/test.dart';
 
+import 'app_code_rule_test_base.dart';
 import 'fake_flutter.dart';
 
 /// The cases every `no_raw_*` rule must pass. A rule's test class supplies
 /// the rule and every use it must flag; the `test_` methods here run for it.
-abstract class RawMaterialRuleTest extends AnalysisRuleTest {
+abstract class RawMaterialRuleTest extends AppCodeRuleTest {
   /// The rule under test, built fresh for each test.
   RawMaterialRule createRule();
 
@@ -21,6 +21,9 @@ abstract class RawMaterialRuleTest extends AnalysisRuleTest {
   /// and function in the rule's set, plus at least one named constructor
   /// where Flutter has one.
   List<String> get flaggedUses;
+
+  @override
+  String get flaggedSource => _source(flaggedUses);
 
   RawMaterialRule get _rule => rule as RawMaterialRule;
 
@@ -166,29 +169,5 @@ abstract class RawMaterialRuleTest extends AnalysisRuleTest {
       "import 'package:flutter/material.dart';\n\n"
       'void build() {\n  $base.new;\n}\n',
     );
-  }
-
-  Future<void> test_testDirectoryIsNotFlagged() async {
-    var file = newFile(
-      '$testPackageRootPath/test/page_test.dart',
-      _source(flaggedUses),
-    );
-    await assertNoDiagnosticsInFile(file.path);
-  }
-
-  Future<void> test_generatedFilesAreNotFlagged() async {
-    for (var suffix in [
-      '.g.dart',
-      '.freezed.dart',
-      '.mocks.dart',
-      '.gr.dart',
-      '.config.dart',
-    ]) {
-      var file = newFile(
-        '$testPackageRootPath/lib/page$suffix',
-        _source(flaggedUses),
-      );
-      await assertNoDiagnosticsInFile(file.path);
-    }
   }
 }

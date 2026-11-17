@@ -2,7 +2,7 @@ import 'package:analyzer/analysis_rule/rule_context.dart';
 import 'package:analyzer/dart/element/element.dart';
 
 /// Suffixes of generated files, which nobody edits by hand.
-const _generatedSuffixes = [
+const generatedSuffixes = [
   '.g.dart',
   '.freezed.dart',
   '.mocks.dart',
@@ -15,7 +15,7 @@ const _generatedSuffixes = [
 bool inAppCode(RuleContext context) {
   if (!context.isInLibDir) return false;
   var path = context.currentUnit?.file.path;
-  return path != null && !_generatedSuffixes.any(path.endsWith);
+  return path != null && !generatedSuffixes.any(path.endsWith);
 }
 
 /// Whether [element] is declared in a library whose URI starts with one of

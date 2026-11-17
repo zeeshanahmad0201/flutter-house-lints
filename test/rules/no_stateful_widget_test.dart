@@ -1,12 +1,12 @@
 // test_reflective_loader runs methods named test_*.
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:analyzer_testing/analysis_rule/analysis_rule.dart';
 // ignore: implementation_imports
 import 'package:analyzer_testing/src/analysis_rule/pub_package_resolution.dart';
 import 'package:flutter_house_lints/src/rules/no_stateful_widget.dart';
 import 'package:test_reflective_loader/test_reflective_loader.dart';
 
+import '../src/app_code_rule_test_base.dart';
 import '../src/fake_flutter.dart';
 
 void main() {
@@ -16,7 +16,7 @@ void main() {
 }
 
 @reflectiveTest
-class NoStatefulWidgetTest extends AnalysisRuleTest {
+class NoStatefulWidgetTest extends AppCodeRuleTest {
   @override
   void setUp() {
     rule = NoStatefulWidget();
@@ -25,6 +25,10 @@ class NoStatefulWidgetTest extends AnalysisRuleTest {
         .addFile('lib/flutter_hooks.dart', fakeHooksLibrary);
     super.setUp();
   }
+
+  @override
+  String get flaggedSource =>
+      '${_widgets}class Page extends StatefulWidget {}\n';
 
   static const _widgets = "import 'package:flutter/widgets.dart';\n\n";
   static const _hooks =
@@ -112,29 +116,5 @@ class NoStatefulWidgetTest extends AnalysisRuleTest {
       'class A extends HookWidget {}\n'
       'class B extends StatelessWidget {}\n',
     );
-  }
-
-  Future<void> test_testDirectoryIsNotFlagged() async {
-    var file = newFile(
-      '$testPackageRootPath/test/page_test.dart',
-      '${_widgets}class Page extends StatefulWidget {}\n',
-    );
-    await assertNoDiagnosticsInFile(file.path);
-  }
-
-  Future<void> test_generatedFilesAreNotFlagged() async {
-    for (var suffix in [
-      '.g.dart',
-      '.freezed.dart',
-      '.mocks.dart',
-      '.gr.dart',
-      '.config.dart',
-    ]) {
-      var file = newFile(
-        '$testPackageRootPath/lib/page$suffix',
-        '${_widgets}class Page extends StatefulWidget {}\n',
-      );
-      await assertNoDiagnosticsInFile(file.path);
-    }
   }
 }

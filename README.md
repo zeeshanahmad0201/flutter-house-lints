@@ -128,8 +128,9 @@ One rule per component family, so a repo can switch off one. To add one:
    names; register it in `allRules` in `lib/main.dart`.
 2. A test in `test/rules/` (copy a sibling: it lists every use the rule must
    flag), with any new classes added to `test/src/fake_flutter.dart`.
-3. One raw use in `example/lib/page.dart` (`tool/check_example.sh` reads the
-   rule ids from `lib/src/rules/`). A non-Material rule such as
+3. One raw use in `example/lib/page.dart`, a `sample()` case in
+   `test/plugin_test.dart`, and the rule id as a `name: 'no_...'` literal in the
+   rule file (`tool/check_example.sh` greps `lib/src/rules/` for it). A non-Material rule such as
    `no_stateful_widget` has its own matcher instead; `app_code.dart` holds the
    shared lib-only/generated-file and library checks.
 4. A row in the rules table above and an entry in `CHANGELOG.md`.
@@ -148,7 +149,7 @@ matches the tag.
   Dart stable, and `tool/check_example.sh` on the latest Flutter stable and on
   Flutter 3.47.9, the floor. A red weekly run means a new SDK broke the plugin
   before an app upgrades into it. The example check judges only this plugin's
-  `no_*` warnings (other analyzer infos, such as SDK deprecations, are
+  rule ids (other analyzer infos, such as SDK deprecations, are
   printed but not judged); an analyzer error still fails it.
 - GitHub switches off a public repo's scheduled workflows after 60 days with
   no activity. Each scheduled run re-enables `ci.yml` through the API (the
@@ -176,8 +177,15 @@ matches the tag.
   button from `Material`, `InkWell` and `Text` is not flagged; review still has
   to catch that.
 - **An indirect `StatefulWidget` subclass passes.** A class that extends an
-  app's own stateful base is not flagged; the base is. A `StatefulWidget`
-  re-exported or wrapped through another library's own class is not followed.
+  app's own stateful base is not flagged; the base is.
+- **A typedef or another package's stateful base passes.** `typedef SW =
+  StatefulWidget; class X extends SW {}` is not flagged, nor is a base from
+  another package such as riverpod's `ConsumerStatefulWidget`.
+- **Run `dart analyze` at the repo or package root, or on files, never on
+  `lib/`.** Checked on a pub workspace: the plugin's warnings show for a single
+  file, a package folder and the workspace root, but `dart analyze apps/pos/lib`
+  or a folder above the packages (`apps`) reports none and exits 0. CI should
+  analyze the root.
 - **Only the ten Material families above.** Cupertino widgets (such as
   `CupertinoAlertDialog`, `showCupertinoDialog`, `CupertinoPageScaffold`) and
   other Material widgets are not checked.
