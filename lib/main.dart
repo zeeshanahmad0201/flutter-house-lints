@@ -12,11 +12,13 @@ import 'src/rules/no_raw_chip.dart';
 import 'src/rules/no_raw_card.dart';
 import 'src/rules/no_raw_snack_bar.dart';
 import 'src/rules/no_raw_scaffold.dart';
+import 'src/rules/no_stateful_widget.dart';
 
 /// The entry point the analysis server loads.
 final plugin = FlutterHouseLints();
 
-/// Every rule this plugin ships, one per Material component.
+/// Every rule this plugin ships: one per Material component, plus the
+/// StatefulWidget convention.
 final List<AnalysisRule> allRules = [
   NoRawAppBar(),
   NoRawListTile(),
@@ -28,6 +30,7 @@ final List<AnalysisRule> allRules = [
   NoRawCard(),
   NoRawSnackBar(),
   NoRawScaffold(),
+  NoStatefulWidget(),
 ];
 
 class FlutterHouseLints extends Plugin {

@@ -1,6 +1,6 @@
 name: flutter_house_lints
-description: Analyzer plugin that flags raw Material components in Flutter app code, so pages use the app's shared design-system widgets.
-version: 0.2.0
+description: Analyzer plugin that flags raw Material components and StatefulWidget in Flutter app code, so pages use the app's shared design-system widgets and hooks.
+version: 0.3.0
 publish_to: none
 repository: https://github.com/zeeshanahmad0201/flutter-house-lints
 

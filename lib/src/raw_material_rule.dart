@@ -6,18 +6,11 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/error/error.dart';
 
+import 'app_code.dart';
+
 /// Where Material's own components are declared: Flutter itself, and the
 /// `material_ui` package Flutter is moving Material into.
 const _materialLibraries = ['package:flutter/', 'package:material_ui/'];
-
-/// Suffixes of generated files, which nobody edits by hand.
-const _generatedSuffixes = [
-  '.g.dart',
-  '.freezed.dart',
-  '.mocks.dart',
-  '.gr.dart',
-  '.config.dart',
-];
 
 /// The shared matcher behind every `no_raw_*` rule: flags a Material
 /// component built directly in app code, so pages go through the app's shared
@@ -105,14 +98,8 @@ class _Visitor extends SimpleAstVisitor<void> {
     rule.reportAtNode(node.methodName, arguments: [function.name!]);
   }
 
-  bool _fromMaterial(Element element) {
-    var uri = element.library?.uri.toString();
-    return uri != null && _materialLibraries.any(uri.startsWith);
-  }
+  bool _fromMaterial(Element element) =>
+      isDeclaredIn(element, _materialLibraries);
 
-  bool _inAppCode() {
-    if (!context.isInLibDir) return false;
-    var path = context.currentUnit?.file.path;
-    return path != null && !_generatedSuffixes.any(path.endsWith);
-  }
+  bool _inAppCode() => inAppCode(context);
 }

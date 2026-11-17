@@ -35,3 +35,17 @@ class ExamplePage extends StatelessWidget {
     );
   }
 }
+
+/// The one `StatefulWidget` subclass, for `no_stateful_widget`. Its state
+/// class is not flagged.
+class ExampleCounter extends StatefulWidget {
+  const ExampleCounter({super.key});
+
+  @override
+  State<ExampleCounter> createState() => _ExampleCounterState();
+}
+
+class _ExampleCounterState extends State<ExampleCounter> {
+  @override
+  Widget build(BuildContext context) => const SizedBox();
+}

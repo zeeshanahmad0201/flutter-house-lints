@@ -10,7 +10,7 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 # Every rule id, read from the rule files, so a new rule is checked here
 # without editing this script.
-rules=$(grep -ho "name: 'no_raw_[a-z_]*'" "$root"/lib/src/rules/*.dart | cut -d"'" -f2 || true)
+rules=$(grep -ho "name: 'no_[a-z_]*'" "$root"/lib/src/rules/*.dart | cut -d"'" -f2 || true)
 if [[ -z "$rules" ]]; then
   echo "FAIL: no rule ids found in $root/lib/src/rules/." >&2
   exit 1
@@ -26,7 +26,9 @@ echo "$output"
 
 # One "SEVERITY rule file" line per plugin diagnostic, from the machine format
 # SEVERITY|TYPE|CODE|FILE|LINE|COL|LENGTH|MESSAGE.
-actual=$(echo "$output" | awk -F'|' 'NF >= 8 && tolower($3) ~ /^no_raw_/ {
+actual=$(echo "$output" | awk -F'|' -v ids="$(echo $rules)" '
+  BEGIN { n = split(ids, a, " "); for (i = 1; i <= n; i++) want[a[i]] = 1 }
+  NF >= 8 && (tolower($3) in want) {
   n = split($4, parts, "/")
   print $1, tolower($3), parts[n - 1] "/" parts[n]
 }' | sort)
